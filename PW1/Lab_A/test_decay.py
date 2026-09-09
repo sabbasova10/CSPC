@@ -16,9 +16,13 @@ def test_starts_at_N0():
     assert simulate(1000, 0.4)[0] == 1000
 
 
-# TODO 1: test_rejects_negative_rate
-#   Check that calling simulate(...) with a negative lam raises a ValueError.
+def test_rejects_negative_rate():
+    #   Check that calling simulate(...) with a negative lam raises a ValueError.
+    with pytest.raises(ValueError):
+        simulate(1000, -0.4)
+
 #   Which pytest tool checks that an error is raised?
+#   raises(name_of_error) helps to check if error is raised in spesific condition
 
 
 # TODO 2: test_matches_law
