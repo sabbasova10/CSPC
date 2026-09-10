@@ -25,7 +25,14 @@ def test_rejects_negative_rate():
 #   raises(name_of_error) helps to check if error is raised in spesific condition
 
 
-# TODO 2: test_matches_law
-#   Check that the simulation's AVERAGE over many seeds is close to the
+def test_matches_law():
+    #  Check that the simulation's AVERAGE over many seeds is close to the
+    NO, lam = 10000, 0.4
+    avg = np.mean([simulate(NO, lam, seed=i) for i in range(200)], axis=0)
+    t = np.arange(len(avg))*0.05  #number of steps are interpreted as array from 1 to 200 and multiplied by 0.05 to get the correct intervals (0.05, 0.1, ...)
+    expected = NO * np.exp(-lam*t)
+    assert avg == pytest.approx(expected, rel=0.05)
+    
 #   physical law  N0 * exp(-lam * t).
 #   Which pytest tool compares floating-point values with a tolerance?
+#   pytest.approx() - compare floats with tolerance
