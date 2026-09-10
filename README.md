@@ -20,4 +20,5 @@ conda activate cspc
 **Tests:** all passing?
 yes
 **Conclusion:**
-- All tests were passed and speed was calculated for two decay functions. I noticed that numpy version is much more faster than simple loop approach, which means that it is more effective to use for difficult calculations. For now speed test may gives different values due to the laptop conditions and parameters in each moment.
+- All tests were passed and speed was calculated for two decay functions. I noticed that numpy is much more faster than simple loop because of the implementing function on whole array (vectorize) rather than iterating through each element in the loop, which makes it more effective to use for difficult calculations. Speed test may vary due to the laptop and OS condition in each moment.
+- My repository was tested by my groupmate. All tests were passed, speed test was run.
