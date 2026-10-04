@@ -1,0 +1,14 @@
+rule all:
+    input:
+        "motion.png",
+        "motion_2D.png"
+
+rule analysis:
+    input: "freefall.csv"
+    output: "motion.png"
+    shell: "python analysis.py"
+
+rule analysis_2D:
+    input: "trajectory.csv"
+    output: "motion_2D.png"
+    shell: "python analysis_2D.py"
