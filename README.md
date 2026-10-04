@@ -45,3 +45,29 @@ yes
 
 **Conclusion:**
 - By using matplotlib the data can be visualized and studied more comprehensively for patterns, similarities and differences. Automation in this case helps to keep output up to date with the changes process (code, data) and facilitate the work by defining rules and steps of process. 
+
+
+
+## PW2 - Lab A: Motion from Tracking Data
+
+**What I built:**
+- Program to analyse position and time data, find out velocity, acceleration and compare results with average data
+- Snakefile for automation of two analysis processes (motion in 1D and 2D)
+
+**Showed Data**
+- 3 figures with shared x and y axes.
+- 1st figure is line graph representing position over time
+- 2nd figure is line graph representing velosity over time
+- 3rd figure is line graph representing acceleration over time
+- From the graph the amplification of noise after taking several derivatives is represented.
+
+- 2 figures with path and speed in 2D motion
+
+**Snakefile pipline**
+- Targets to get two files by first rule, analyse 1D motion by the second rule, analyse 2D motion by the third rule.
+
+**Conclusion:**
+- The second order derivative amplifies the high-frequency measurements noise present in the position data, which create heavy variation in acceleration results.
+- Standart deviation is high (28.71612), therefore mean (-8.57968) value is near standart g (-9.81), but not the same.
+- When integration is used variation in results supperesed by sumation, so largest difference is just (0.78456)
+- In conlusion, diffirentiation amplifies noice in measurements and feel errors, while integration suppress noise.
