@@ -25,8 +25,8 @@ t, y = np.loadtxt("freefall.csv", delimiter=',', skiprows=1, unpack=True)
 v = dydt = np.gradient(y, t)
 a = dvdt = np.gradient(v, t)
 acceleration_mean = np.mean(a)
-print(f"Mean acceleration: {acceleration_mean}")
-print(f"Standart deviation: {a.std()}")
+print(f"Mean acceleration: {acceleration_mean:.2f}")
+print(f"Standart deviation: {a.std():.2f}")
 
 # TODO 3: integrate a back up to recover velocity and position
 #         (hint: cumulative_trapezoid(a, t, initial=0) + v[0], then again)
@@ -34,7 +34,7 @@ print(f"Standart deviation: {a.std()}")
 v_recovered = cumulative_trapezoid(a, t, initial=0) + v[0]
 y_recovered = cumulative_trapezoid(v_recovered, t, initial=0) + y[0]
 largest_difference = np.max((np.abs(y_recovered-y)))
-print(f"Largest difference: {largest_difference}")
+print(f"Largest difference: {largest_difference:.2f}")
 
 # TODO 4: make a figure with 3 stacked panels: position, velocity, acceleration
 #         vs time. Mark the true -9.81 line on the acceleration panel.
@@ -44,18 +44,21 @@ print(f"Largest difference: {largest_difference}")
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8,6), sharex=True)
 a_std = [-9.81]*len(t)
 
-ax1.plot(t, y)
+ax1.plot(t, y, label="Position")
 ax1.set_title("Position & time")
 ax1.set(xlabel="time (s)", ylabel="position (m)")
 
-ax2.plot(t, v)
+ax2.plot(t, v, label="Velocity")
 ax2.set_title("Velocity & time")
 ax2.set(xlabel="time (s)", ylabel="velocity (m)")
 
-ax3.plot(t, a)
+ax3.plot(t, a, label="Acceleration")
 ax3.set_title("Acceleration & time")
 ax3.plot(t, a_std, linestyle='dashed')
 ax3.set(xlabel="time (s)", ylabel="acceleration (m)")
 
+
+fig.legend()
 plt.tight_layout()
 fig.savefig("motion.png")
+plt.show()

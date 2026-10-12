@@ -71,3 +71,30 @@ yes
 - Standart deviation is high (28.71612), therefore mean (-8.57968) value is near standart g (-9.81), but not the same.
 - When integration is used variation in results supperesed by sumation, so largest difference is just (0.78456)
 - In conlusion, diffirentiation amplifies noice in measurements and feel errors, while integration suppress noise.
+
+
+
+## PW2 - Lab B: Optimization in Chemistry
+
+**What I built:**
+- Program to optimize chemistry datasets via different optimizations techniques such as gradient descent, newton and SLSQP.
+- Snakefile for automation of two analysis processes (kinetics and titration)
+
+**Showed Data**
+- Comparasion of 3 optimization techniques on simple and complex functions with different starting point.
+- Curve-fitting optimization for a reaction rate (rate constant) with minimization of total error
+- Optimization of equilibrium constant by minimizing amount of matter
+- Titration equivalence point optimized by gradient. 
+
+**Snakefile pipline**
+- Targets to get two files by first rule, analyse kinetics.csv by the second rule, analyse titration.csv by the third rule.
+
+**Conclusion:**
+- All techniques agree (3.00) on simple functions with one minimum point. When function becomes more complex with several min/max points methods give different results.
+- x0=0: Gradient descent = SLSQP = -1.3, Newton=0.17.
+- x0=2: Gradient descent = Newton = 1.13, SLSQP=-1.3
+- Newton method can show minimum when d2f > 0 (-5.65, x0=0) and maximum when 2df < 0 (9.35, x0=2) depending on starting point
+- If function has several stationary points, Newton method goes until the nearest to the initial x0. It is due to the dg=0 which is used in this method. In Gradient descent slope going downwards, so the second starting point leads to the nearest minimum (it doesnt go upwards if needed).
+- In kinetics k=0.26 which is fitted rate constant and optimized by curve-fitting, where squared error between measurement and theoretical value is minimized.
+- Equilibrium point is optimized (x=0.66) and amounts are calculated(I2=0.34, H2=0.34, HI=1.33), by highliting eq. point.
+- Equilibrium point is computed by taking largest gradient (50.0 ml) and pH jump is plotted.

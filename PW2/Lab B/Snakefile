@@ -1,0 +1,14 @@
+rule all:
+    input:
+        "kinetics.png",
+        "titration.png"
+
+rule kinetics:
+    input: "kinetics.csv"
+    output: "kinetics.png"
+    shell: "python kinetics.py"
+
+rule titration:
+    input: "titration.csv"
+    output: "titration.png"
+    shell: "python titration.py"
