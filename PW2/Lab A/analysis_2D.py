@@ -10,7 +10,7 @@ vy = dydt = np.gradient(y, t)
 ax = dvxdt = np.gradient(vx, t)
 ay = dvydt = np.gradient(vy, t)
 
-fig, (ax1, ax2) = plt.subplots(1, 2, sharex=True)
+fig, (ax1, ax2) = plt.subplots(2,1, figsize=(10,10))
 
 ax1.plot(x, y, label="Trajectory")
 ax1.set_title("Path")
@@ -23,5 +23,6 @@ ax2.set_title("Speed & time ")
 ax2.set(xlabel="time (s)", ylabel="speed (m/s)")
 
 fig.legend()
+fig.tight_layout()
 fig.savefig("motion_2D.png")
 plt.show()

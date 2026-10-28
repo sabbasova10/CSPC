@@ -98,3 +98,32 @@ yes
 - In kinetics k=0.26 which is fitted rate constant and optimized by curve-fitting, where squared error between measurement and theoretical value is minimized.
 - Equilibrium point is optimized (x=0.66) and amounts are calculated(I2=0.34, H2=0.34, HI=1.33), by highliting eq. point.
 - Equilibrium point is computed by taking largest gradient (50.0 ml) and pH jump is plotted.
+
+
+
+## PW3 - Lab A: Data, Distribution, Testing, and Causation
+
+**What I built:**
+- Program to identify distribution of data in dataset.
+- Snakefile for automation of figures generation from analysed data.
+
+**Showed Data**
+- Age is distributed approximatelly normally with more values on the left side (age < 70)
+- Chortesol is skewed to the right (skew < 0, mean > median), there exist a standalone value. (W = 0.95; p = 5.91e-09)
+- Resting blood pressure is skewed to the right (skew > 0, mean > median)
+- Max heart rate is skewed to the left (skew < 0, mean < median)
+- Q-Q ploting and p-value for resting blood pressure and max heart beat are varied noticingly from normal distribution. In age and cholesterol Q-Q plot approximatelly fit the normal distribution (minor head/tail differences) while p-value ensures it is not normal.
+
+**After statistical check**
+- After computation by Shapiro method all 4 dataframes were defined as not normal. 
+- Age - W = 0.99; p = 6.07e-03
+- Cholisterol - W = 0.95; p = 5.91e-09
+- Resting blood pressure - W = 0.97; p = 1.80e-06
+- Max heart rate - W = 0.98; p = 7.00e-05
+
+**Snakefile pipline**
+- Create distribution.png by the rule
+
+**Conclusion:**
+- The shape of heart.csv (Rows & Columns: (303, 14)).
+- Distribution of all 4 parameters is not normal according t statistical analysis, even if in histogram it fits quite well.
