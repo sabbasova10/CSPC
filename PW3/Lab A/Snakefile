@@ -1,0 +1,11 @@
+rule all:
+    input:
+        "distribution.png"
+
+rule heart_analysis:
+    input:
+        "heart.csv"
+    output:
+        "distribution.png"
+    shell:
+        "python heart.py"
