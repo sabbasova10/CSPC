@@ -127,3 +127,61 @@ yes
 **Conclusion:**
 - The shape of heart.csv (Rows & Columns: (303, 14)).
 - Distribution of all 4 parameters is not normal according t statistical analysis, even if in histogram it fits quite well.
+
+
+
+## PW3 - Lab B: Data, Distribution, Testing, and Causation
+
+**What I built:**
+- Continue the program to statistical analysis of heart desease data to investigate correlations.
+- Program to analyse a chemical exposure dataset to investivate correlation and causation.
+- Snakefile for automation of figures generation from analysed data.
+
+**Showed Data**
+- mannwhitneyu() method was selected because all the columns are not distributed normally. U-static=5806.50; p-value=1.86e-13
+
+- By this result thalach (max heart beat) groups (significantly differ), null hypoteses regected.
+
+- Desease: mean=139.26; SE=1.92; CI=[135.43,143.09]
+
+- Healthy: mean=158.38; SE=1.50; CI=[155.38,161.38]
+
+- Indeed 2 groups are different and have a slight diversity in values of mean (se_healthy = 1.5, se_desease = 1.92)
+
+- r=-0.3938, p=1.11e-12. Corilation between age and thalach is negative and moderate relationship.
+
+- Cadmium looks like the cause of cancer because it corelates more (Benzen: r=0.3847,
+Cadmium: r=0.8800).
+
+- Relationship between pollution index and cancer is strong (r=0.8951, with age r=-0.0338) so we take this colunm to restric two others.
+
+- Real cause is Benzene (corelation after restriction of set by pollution index r=0.6979).
+
+-  Entropy of target: 1.00. Meaning that values unpredictible.
+
+
+**Snakefile pipline**
+- Create distribution.png, barchart.png and corilation.png by the rules
+
+**Conclusion:**
+
+-Since values are not normal the selected method is Mann-Whitneyu U test (non-parametric test)
+- p-value (1.86e-13) is much smaller than 0.05, so the null hypothesis of no difference between the groups(health and desease) is rejected.
+
+- Patients with heart disease have a lower mean maximum heart rate than healthy individuals in this dataset by statistical test and confidence intervals.
+
+- Age and maximum heart rate have a statistically significant, moderate negative correlation (r=-0.3938). Older individuals tend to have lower maximum heart rates, although age alone does not fully explain the variation in maximum heart rate.
+
+- At fisrt glance causation is determined as Cadmium due to strong correlation (r=0.8800).
+
+- However real causation is determined as benzene. This happens because one feature can correlate better with another in general but not at every individual set. So strong corilation doesnt mean causation.
+
+- Standart restrictions
+Benzen: r=0.6979, p=1.15e-30
+Cadmium: r=0.3132, p=5.99e-06
+
+- Narrow restrictions
+Benzen: r=0.6676, p=1.09e-13
+Cadmium: r=-0.0367, p=7.23e-01
+
+- The target variable has high entropy, meaning that its categories are difficult to predict from their overall frequencies alone. However, entropy measures uncertainty in the category distribution; it does not mean that every individual outcome is unpredictable when other features are considered.

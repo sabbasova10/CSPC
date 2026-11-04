@@ -1,11 +1,15 @@
 rule all:
     input:
         "distribution.png"
+        "barchart.png",
+        "corilation.png"
 
 rule heart_analysis:
     input:
         "heart.csv"
     output:
         "distribution.png"
+        "barchart.png",
+        "corilation.png"
     shell:
         "python heart.py"
