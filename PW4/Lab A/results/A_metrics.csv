@@ -1,0 +1,3 @@
+model,TP,FP,FN,TN,accuracy,precision,recall,f1
+KNN (K=7),54,15,18,114,0.8358,0.7826,0.75,0.766
+Decision Tree (max_depth=4),58,21,14,108,0.8259,0.7342,0.8056,0.7682

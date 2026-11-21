@@ -70,7 +70,7 @@ fig.savefig("barchart.png")
 plt.show()
 
 r, p = stats.pearsonr(age, thalach)
-print(f"r={r:.4f}, p={p:.2e}"))
+print(f"r={r:.4f}, p={p:.2e}")
 
 fig, ax = plt.subplots(1,1, figsize=(8,8))
 ax.scatter(age, thalach, alpha=0.5, label="Corilation of age and max heart beat")

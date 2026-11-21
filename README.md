@@ -129,7 +129,6 @@ yes
 - Distribution of all 4 parameters is not normal according t statistical analysis, even if in histogram it fits quite well.
 
 
-
 ## PW3 - Lab B: Data, Distribution, Testing, and Causation
 
 **What I built:**
@@ -185,3 +184,162 @@ Benzen: r=0.6676, p=1.09e-13
 Cadmium: r=-0.0367, p=7.23e-01
 
 - The target variable has high entropy, meaning that its categories are difficult to predict from their overall frequencies alone. However, entropy measures uncertainty in the category distribution; it does not mean that every individual outcome is unpredictable when other features are considered.
+
+
+## PW4 - Lab A: Concrete Compressive Strength (Supervised Learning)
+
+**Dataset Citation: Yeh, I-Cheng (1998). Concrete Compressive Strength, UCI Machine Learning Repository (ID: 165).**
+
+**What I built:**
+- fetch_concrete.py downloads the UCI Concrete Compressive Strength dataset, renames columns, inspects metadata/variables, and saves data/concrete.csv .
+
+- sessionA.py cleans the data, performs linear and polynomial regression, trains KNN and Decision Tree classifiers, evaluates classification metrics and probability thresholds, compares feature importance methods, and tests physics-informed features.
+
+- Plots and tables in results/ (corelation.png, linear_residuals.png, poly_degrees.png, knn_sweep.png, tree_depth.png, feature_importance.png, and A_metrics.csv).
+
+**Showed Data**
+
+- **A1** 
+  - cement kg/m^3, slag kg/m^3, ash kg/m^3, water kg/m^3, superplastic kg/m^3, coarse_agg kg/m^3, fine_agg kg/m^3, age day, strength MPa — Target
+
+- **A2**
+- 25 duplicate rows and 0 missing values (1030 -> 1005 unique rows)
+- df.describe() shows coarse_agg, fine_agg, and cement span hundreds of kg/m^3, whereas superplastic and age span much smaller numerical ranges.
+- strength vs. cement shows a weak-to-moderate positive trend with wide scatter (r = 0.4883).
+- strength vs. age shows a strong non-linear (logarithmic) curve that rises rapidly in early curing days and levels off later (r = 0.3374).
+
+- **A3**
+- 80/20 split (random_state=42): 
+Training set size: X=(804, 8), y=(804,)
+Test set size:     X=(201, 8), y=(201,).
+
+- **A4**
+- Equation: y_hat = -23.39_MPa + 0.1167 x_cement_MPa_per_kg + 0.0981 x_slag_MPa_per_kg + 0.0846 x_ash_MPa_per_kg - 0.1314 x_water_MPa_per_kg + 0.3315 x_superplastic_MPa_per_kg + 0.0155 x_coarse_agg_MPa_per_kg + 0.0206 x_fine_agg_MPa_per_kg + 0.1106 x_age_day
+
+- intercept in MPa, ingredients in MPa per kg/m^3, age in MPa per day.
+
+- A4 Performance Metrics
+
+| Metric | Value |
+| :--- | :---: |
+| Train RMSE | 10.002 MPa |
+| Test RMSE | 11.191 MPa |
+| Test MAE | 8.895 MPa |
+| Train R2 | 0.610 |
+| Train Adj R2 | 0.606 |
+| Test R2 | 0.580 |
+
+- Plotting test residuals against log(age) shows residuals concentrated on the positive side at intermediate ages and negative at extremes rather than randomly scattered around zero.
+
+- **A5**
+- A5) Polynomial Regression Comparison
+
+| degree | p | train_RMSE | test_RMSE | test_MAE | train_R2 | train_adj_R2 | test_R2 |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 1 | 8 | 10.002 | 11.191 | 8.895 | 0.610 | 0.606 | 0.580 |
+| 2 | 44 | 6.989 | 8.308 | 6.220 | 0.809 | 0.798 | 0.769 |
+| 3 | 164 | 4.396 | 5.952 | 4.501 | 0.925 | 0.905 | 0.881 |
+| 4 | 494 | 2.334 | 39.410 | 10.028 | 0.979 | 0.945 | -4.206 |
+
+- At degree 4, features expand to p = 494 (more than half of n = 804 training rows), causing test R^2 to become strongly negative and test RMSE to spike while training R^2 (adjusted) remains high.
+
+- **A6**
+- Class proportions: 0 (< 40 MPa = 0.6418 (64.2%), 1 (>= 40 MPa = 0.3582 (35.8%).
+
+| K | train_acc | test_acc |
+| :---: | :---: | :---: |
+| 1 | 0.997512 | 0.830846 |
+| 3 | 0.934080 | 0.800995 |
+| 5 | 0.906716 | 0.815920 |
+| 7 | 0.893035 | 0.835821 |
+| 15 | 0.848259 | 0.825871 |
+| 25 | 0.840796 | 0.805970 |
+| 51 | 0.804726 | 0.781095 |
+| 101 | 0.757463 | 0.736318 |
+
+Chosen K = 7
+Test accuracy with StandardScaler:    0.8358
+Test accuracy without StandardScaler: 0.8209
+
+5-split test accuracies (random_state 0..4): [0.801, 0.8507, 0.8209, 0.8358, 0.806]
+Mean: 0.8229 | Std: 0.0185 | Range (max - min): 0.0498.
+
+- Decision Tree (tree_depth.png):
+
+| max_depth | n_leaves | train_accs | test_accs | gap |
+| :---: | :---: | :---: | :---: | :---: |
+| 1 | 2 | 0.7550 | 0.7015 | 0.0535 |
+| 2 | 4 | 0.7550 | 0.7015 | 0.0535 |
+| 3 | 8 | 0.8396 | 0.7960 | 0.0435 |
+| 4 | 16 | 0.8694 | 0.8259 | 0.0435 |
+| 5 | 26 | 0.8893 | 0.8458 | 0.0435 |
+| 6 | 38 | 0.9303 | 0.8408 | 0.0896 |
+| 8 | 61 | 0.9726 | 0.8557 | 0.1169 |
+| None | 80 | 0.9975 | 0.8806 | 0.1169 |
+
+- Top two levels of tree (max_depth=4):
+Age is checked at the 42 days, then cement is checked on 257.7 then water on 156.2
+if cement > 257.7 then superplastic is checked at 0.95
+
+If age > 42, then superplastic is checked on 6.45 then fine_agg on 749.55
+if superplastic >  6.45 then cement is checked on 203.35
+
+- **A7**
+
+| model | TP | FP | FN | TN | accuracy | precision | recall | f1 |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| KNN (K=7) | 54 | 15 | 18 | 114 | 0.8358 | 0.7826 | 0.7500 | 0.7660 |
+| Decision Tree (max_depth=4) | 58 | 21 | 14 | 108 | 0.8259 | 0.7342 | 0.8056 | 0.7682 |
+
+- Threshold change for KNN (K=7)
+
+| threshold | TP | FP | FN | TN | precision | recall |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 0.3 | 61 | 23 | 11 | 106 | 0.7262 | 0.8472 |
+| 0.5 | 54 | 15 | 18 | 114 | 0.7826 | 0.7500 |
+| 0.7 | 39 | 11 | 33 | 118 | 0.7800 | 0.5417 |
+| 0.9 | 18 | 1 | 54 | 128 | 0.9474 | 0.2500 |
+
+- **A8**
+- A8) Feature Importance Comparison
+
+| feature | raw_coef | std_coef | tree_imp | perm_knn_f1 | perm_knn_std | perm_tree_f1 | perm_tree_std |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| cement | 0.1167 | 12.1188 | 0.2895 | 0.1646 | 0.0359 | 0.1932 | 0.0310 |
+| slag | 0.0981 | 8.4373 | 0.0199 | 0.0552 | 0.0208 | 0.0000 | 0.0000 |
+| ash | 0.0846 | 5.4395 | 0.0000 | 0.0159 | 0.0160 | 0.0000 | 0.0000 |
+| water | -0.1314 | -2.8279 | 0.0371 | 0.0680 | 0.0247 | 0.0098 | 0.0105 |
+| superplastic | 0.3315 | 1.9708 | 0.1929 | 0.0663 | 0.0316 | 0.1706 | 0.0289 |
+| coarse_agg | 0.0155 | 1.1990 | 0.0080 | 0.0384 | 0.0178 | 0.0000 | 0.0000 |
+| fine_agg | 0.0206 | 1.6699 | 0.0861 | 0.0808 | 0.0250 | 0.0663 | 0.0176 |
+| age | 0.1106 | 6.8945 | 0.3666 | 0.1757 | 0.0335 | 0.1338 | 0.0304 |
+
+- raw coefficients differ in ranking from standardized coefficients due to differing measurement units, while standardized coefficients, tree importances, and permutation importances all rank cement and age among the top drivers (with slag ranking 2nd in standardized linear coefficients, and superplastic ranking 3rd in tree and permutation importances while water has a negative linear effect and smaller tree/permutation scores).
+
+- **Bonus**
+- Bonus) Physics-Informed Features
+
+| model | p | test_R2 |
+| :--- | :---: | :---: |
+| Linear + log(age) | 8 | 0.804 |
+| Linear + log(age) + w/b | 8 | 0.806 |
+
+- replacing age with ln(age) and water with w/b = water/(cement + slag + ash) keeps p = 8 features while raising test R^2 well above plain linear regression.
+
+**Conclusion**
+
+- Duplicate rows must be removed before splitting so identical examples do not leak across train and test sets and artificially increase performance. 
+- Large scale differences across features make StandardScaler essential for distance-based models like KNN and polynomial numerical stability.
+
+- The systematic curved pattern in linear residuals confirms a non-linear relationship, meaning plain linear regression underfits. 
+- Degree 3 polynomial regression is optimal because it minimizes test error and the train–test gap.
+- Degree 4 severely overfits because p = 494 approaches n = 804, and training R^2 (adjusted) fails to warn against this because it is computed only on training data.
+
+- K = 7 balances bias and variance in KNN, while max_depth = 4 for the Decision Tree avoids the overfitting of an unpruned tree (None) and keeps the rules human-readable. The top tree splits on age, cement, and water align with concrete curing physics.
+
+- On a construction site, a False Positive (FP) is the dangerous mistake because weak concrete (< 40 MPa) would be approved for structural use; precision controls it. 
+- Raising the decision threshold to 0.7 (or 0.9) reduces FP and increases precision, at the cost of lower recall (more False Negatives, meaning some acceptable concrete are rejected or require further testing).
+
+- All importance methods agree that age, cement, and water drive predictions, matching engineering principles, though high statistical importance alone does not establish causation without controlled experiments. 
+
+- Encoding domain physics ln(age) and w/b ratio achieves high accuracy with only p = 8 features, proving that physical insight can outperform blind high-degree polynomial complexity.

@@ -10,3 +10,4 @@ dependencies:
 - snakemake
 - scipy
 - pandas
+- scikit-learn
