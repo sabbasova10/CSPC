@@ -343,3 +343,132 @@ if superplastic >  6.45 then cement is checked on 203.35
 - All importance methods agree that age, cement, and water drive predictions, matching engineering principles, though high statistical importance alone does not establish causation without controlled experiments. 
 
 - Encoding domain physics ln(age) and w/b ratio achieves high accuracy with only p = 8 features, proving that physical insight can outperform blind high-degree polynomial complexity.
+
+
+## PW4 - Lab B: Wine Chemistry (Unsupervised Learning & Snakemake Automation)
+
+**Dataset Citation: Forina, M., et al. "Wine Recognition Data", UCI Machine Learning Repository (loaded via sklearn.datasets.load_wine).**
+
+**What I built:**
+- sessionB.py to explore the 178-wine chemical dataset without labels, compare raw vs. standardised PCA, select k for K-Means via the elbow curve, inspect cluster centres in real units, evaluate clustering agreement against true cultivars, and compare unsupervised agreement with supervised KNN.
+- Snakefile to automate the full PW4 workflow so a single command reproduces all datasets, tables, and figures.
+- Plots and tables saved in results/ (B_agreement.csv and Session B PCA/elbow/cluster figures).
+
+**Showed Data**
+
+- **B1. Dataset & Numerical Scales:**
+  - Chemical analysis of 178 wines grown in the same region of Italy from 3 different cultivars, measured across 13 continuous chemical features.
+  - X.describe() shows the largest numerical ranges and standard deviations are proline (278-1680, SD 314.9) and magnesium (70-162, SD 14.28), while the smallest are nonflavanoid_phenols (0.13-0.66, SD 0.124) and hue (0.48-1.71, SD 0.229).
+
+- **B2. PCA on Raw Data:**
+  - On unscaled data, PC1 captures 99.81% (0.9981) of total variance, with a loading of 0.9998 on proline alone because proline has the largest numerical scale and variance (99,166).
+
+- **B3. Standardised PCA:**
+  - 8 components are needed to retain at least 90% of the total variance (92.02%), while the PC1–PC2 plane captures 55.41% (36.20% + 19.21%).
+  - B3) Explained Variance & Cumulative Sums
+
+| PC | explained_variance_ratio | cumulative_variance |
+| :---: | :---: | :---: |
+| PC1 | 0.3620 | 0.3620 |
+| PC2 | 0.1921 | 0.5541 |
+| PC3 | 0.1112 | 0.6653 |
+| PC4 | 0.0707 | 0.7360 |
+| PC5 | 0.0656 | 0.8016 |
+| PC6 | 0.0494 | 0.8510 |
+| PC7 | 0.0424 | 0.8934 |
+| PC8 | 0.0268 | 0.9202 |
+| PC9 | 0.0222 | 0.9424 |
+| PC10 | 0.0193 | 0.9617 |
+| PC11 | 0.0174 | 0.9791 |
+| PC12 | 0.0130 | 0.9920 |
+| PC13 | 0.0080 | 1.0000 |
+
+- **PC1** is driven positively by flavanoids (+0.423), total_phenols (+0.395), od280/od315 (+0.376), proanthocyanins (+0.313), and hue (+0.297), and negatively by nonflavanoid_phenols (-0.299), malic_acid (-0.245), and alcalinity_of_ash (-0.239).
+- **PC2** is driven positively by color_intensity (+0.530), alcohol (+0.484), proline (+0.365), ash (+0.316), and magnesium (+0.300), and negatively by hue (-0.279) and od280/od315 (-0.164).
+- Scattering on the PC1–PC2 plane shows 3 visual groups arranged in a U shape.
+
+- **B4. K-Means Initialisation & Elbow Method:**
+  - Inertia across random_state 0..7 (n_init=1): [1277.93, 1278.76, 1277.93, 1277.93, 1279.97, 1278.76, 1282.46, 1278.76]
+  - With n_init=1, inertia varies across random_state=0..7 because each seed places starting centres differently and can converge to different local minima; n_init=10 runs 10 independent initialisations and keeps the run with the lowest inertia.
+  - Across $k = 1 \dots 10$, inertia drops sharply until **$k = 3$** ($\approx 2314 \rightarrow 1659 \rightarrow 1278$), after which further increases give only small, linear reductions.
+
+- **B5. Cluster Sizes & Real-Unit Centres ($k = 3$):**
+  - Cluster sizes: **65** (Cluster 0), **51** (Cluster 1), and **62** (Cluster 2) wines.
+  - B5) Cluster Centres in Real Units
+
+| Feature | Cluster 0 | Cluster 1 | Cluster 2 |
+| :--- | :---: | :---: | :---: |
+| alcohol | 12.25 | 13.13 | 13.68 |
+| malic_acid | 1.90 | 3.31 | 2.00 |
+| ash | 2.23 | 2.42 | 2.47 |
+| alcalinity_of_ash | 20.06 | 21.24 | 17.46 |
+| magnesium | 92.74 | 98.67 | 107.97 |
+| total_phenols | 2.25 | 1.68 | 2.85 |
+| flavanoids | 2.05 | 0.82 | 3.00 |
+| nonflavanoid_phenols | 0.36 | 0.45 | 0.29 |
+| proanthocyanins | 1.62 | 1.15 | 1.92 |
+| color_intensity | 2.97 | 7.23 | 5.45 |
+| hue | 1.06 | 0.69 | 1.07 |
+| od280/od315_of_diluted_wines | 2.80 | 1.70 | 3.16 |
+| proline | 510.17 | 619.06 | 1100.23 |
+
+- **Cluster 0 (65 wines):** Moderate/light-bodied wines with the lowest alcohol (12.25%), color_intensity (2.97), proline (510.17), and magnesium (92.74), and high hue (1.06).
+- **Cluster 1 (51 wines):** High color_intensity (7.23) and malic_acid (3.31) with high alcalinity_of_ash (21.24) and nonflavanoid_phenols (0.45), paired with the lowest flavanoids (0.82) and hue (0.69).
+- **Cluster 2 (62 wines):** Full-bodied wines with the greatest proline (1100.23), magnesium (107.97), alcohol (13.68%), and flavanoids (3.00), and lowest alcalinity_of_ash (17.46).
+
+- **B6. Cultivar Reveal & Agreement Comparison (results/B_agreement.csv):**
+
+  - **Crosstab: Scaled data (13 feats)**
+
+| True Cultivar \ Cluster | 0 | 1 | 2 |
+| :---: | :---: | :---: | :---: |
+| **0** | 0 | 0 | 59 |
+| **1** | 65 | 3 | 3 |
+| **2** | 0 | 48 | 0 |
+
+  - **Crosstab: Raw data (13 feats)**
+
+| True Cultivar \ Cluster | 0 | 1 | 2 |
+| :---: | :---: | :---: | :---: |
+| **0** | 0 | 46 | 13 |
+| **1** | 50 | 1 | 20 |
+| **2** | 19 | 0 | 29 |
+
+  - **Crosstab: Scaled PCA (PC1 & PC2)**
+
+| True Cultivar \ Cluster | 0 | 1 | 2 |
+| :---: | :---: | :---: | :---: |
+| **0** | 0 | 59 | 0 |
+| **1** | 65 | 5 | 1 |
+| **2** | 0 | 0 | 48 |
+
+  - **Agreement Summary**
+
+| Version | matched_wines | total_wines | agreement |
+| :--- | :---: | :---: | :---: |
+| Scaled data (13 feats) | 172 | 178 | 0.9663 |
+| Raw data (13 feats) | 125 | 178 | 0.7022 |
+| Scaled PCA (PC1 & PC2) | 172 | 178 | 0.9663 |
+
+- **Bonus. Supervised KNN vs. Unsupervised Agreement:**
+
+| Pipeline (test_size=0.25, random_state=42) | Test Accuracy |
+| :--- | :---: |
+| StandardScaler() + KNeighborsClassifier(5) | 0.9333 (42 / 45) |
+| StandardScaler() + PCA(2) + KNeighborsClassifier(5) | 0.9333 (42 / 45) |
+
+**Snakefile pipeline**
+- Four rules (all, fetch, session_a, session_b) automate data download and both analysis scripts.
+- **Reproducing command:** snakemake --cores 1 (or MPLBACKEND=Agg snakemake --cores 1 to save plots without GUI popups).
+- **Re-running with no changes:** Snakemake reports Nothing to be done (all requested files are present and up to date) because all target files exist and no input timestamps are newer than their outputs.
+- **Changing a hyperparameter in sessionA.py:** Only session_a reruns; session_b does not rerun because its inputs (sessionB.py) did not change, and fetch does not rerun because data/concrete.csv is already present and its rule has no modified script inputs.
+
+**Conclusion**
+
+- Unscaled PC1 (99.81% variance) cannot be accepted as the main chemical difference because it reflects proline's large measurement units rather than true chemistry. Standardising puts all 13 features on equal scale, where PC1 contrasts polyphenol-rich wines against acidic/high-alkalinity wines and PC2 separates high-alcohol, deeply coloured wines from lighter ones.
+
+- k = 3 is selected at the elbow of the inertia curve where capturing additional clusters becomes unnecessary. We cannot simply minimise inertia because inertia monotonically decreases to 0 at k = 178 (one cluster per wine), losing all grouping structure.
+
+- Standardised K-Means recovers the three cultivars with 96.6% agreement (and PC1–PC2 K-Means achieves 96.6%), whereas raw K-Means drops to 70.2% due to proline dominance. Achieving 96.6% agreement without seeing labels shows that the three grape cultivars possess naturally distinct chemical signatures.
+
+- Comparing Bonus test accuracy (93.3%, 42/45) directly with previous agreement (96.6%, 172/178) is not completely fair: evaluated K-Means in-sample on all 178 wines using post-hoc majority matching, whereas the fitted StandardScaler(), PCA, and KNN strictly on 133 training wines and evaluated on 45 unseen test wines (where 1–2 borderline wines shift accuracy by 2.2%-4.4%) while using y_train labels directly.
