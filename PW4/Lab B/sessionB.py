@@ -104,3 +104,143 @@ ax.grid(True, linestyle="--", alpha=0.5)
 plt.tight_layout()
 fig.savefig("results/pc1_pc2.png", dpi=150)
 plt.show()
+
+# B4
+
+inertia_1 = []
+inertia_2 = []
+k_values = []
+
+for i in range(8):
+    km = KMeans(n_clusters=3, init="k-means++", n_init=1, max_iter=300, random_state=i)
+    km.fit(Z)
+    inertia_1.append(km.inertia_)
+    
+for k in range(1,11):
+    km = KMeans(n_clusters=k, init="k-means++", n_init=10, max_iter=300, random_state=0)
+    km.fit(Z)
+    k_values.append(k)
+    inertia_2.append(km.inertia_)
+    
+print("Inertia across random_state 0..7 (n_init=1):", [round(x, 2) for x in inertia_1])
+
+fig, ax = plt.subplots(figsize=(8,10))
+ax.plot(k_values, inertia_2, color="red", marker="o", label="Inertia")
+ax.set_title("Finding number of clusters")
+ax.set_ylabel("W inertia")
+ax.set_xlabel("Number of clusters (k)")
+ax.grid(True, linestyle="--", alpha=0.5)
+ax.legend()
+plt.tight_layout()
+fig.savefig("results/inertia.png")
+plt.show()
+
+# B5
+k_chosen = 3
+km = KMeans(n_clusters=k_chosen, init="k-means++", n_init=10, max_iter=300, random_state=0)
+km.fit(Z)
+sizes = np.bincount(km.labels_)
+
+sizes_df = pd.DataFrame({
+    "cluster": range(k_chosen),
+    "count": sizes
+})
+
+centres_real = pd.DataFrame(
+    scaler.inverse_transform(km.cluster_centers_),
+    columns=X.columns,
+)
+centres_real.index.name = "cluster"
+print("\nB5) Cluster Centres in Real Units")
+print(centres_real.round(2).T)  
+
+
+fig, ax = plt.subplots(figsize=(7, 5))
+scatter = ax.scatter(
+    scores[:, 0],
+    scores[:, 1],
+    c=km.labels_,
+    cmap="viridis",
+    alpha=0.85,
+    edgecolors="k",
+)
+
+centres_pca = pca.transform(km.cluster_centers_)
+ax.scatter(
+    centres_pca[:, 0],
+    centres_pca[:, 1],
+    c="red",
+    marker="X",
+    s=180,
+    edgecolors="black",
+    label="Cluster Centres",
+)
+
+ax.set_xlabel(f"PC1 ({exp_var[0]*100:.1f}% variance)")
+ax.set_ylabel(f"PC2 ({exp_var[1]*100:.1f}% variance)")
+ax.set_title("Wines in the PC1–PC2 Plane Coloured by K-Means Cluster (k=3)")
+ax.legend(*scatter.legend_elements(), title="Cluster", loc="lower right")
+ax.grid(True, linestyle="--", alpha=0.5)
+plt.tight_layout()
+fig.savefig("results/B5_clusters_pc1_pc2.png", dpi=150)
+plt.show()
+
+print(sizes_df.to_string(index=False))
+
+# B6
+data_versions = [
+    ("Scaled data (13 feats)", Z),
+    ("Raw data (13 feats)", X),
+    ("Scaled PCA (PC1 & PC2)", scores[:, :2]),
+]
+
+agreements = []
+k_value = 3
+for name, data in data_versions:
+    
+    km = KMeans(n_clusters=k_value, init="k-means++", n_init=10, max_iter=300, random_state=0)
+    km.fit(data)
+
+    labels = km.labels_
+
+    contingency_table = pd.crosstab(cultivar, labels)
+    agreement = contingency_table.max(axis=0).sum() / len(cultivar)
+    
+    print(f"\nB6) Crosstab: {name}")
+    print(contingency_table)
+    
+    agreements.append({
+        "version": name,
+        "matched_wines": int(contingency_table.max(axis=0).sum()),
+        "total_wines": len(cultivar),
+        "agreement": round(agreement, 4),
+    })
+    
+agreement_df = pd.DataFrame(agreements)
+print(agreement_df.to_string(index=False))
+agreement_df.to_csv("results/B_agreement.csv", index=False)
+
+# Bonus
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, cultivar, test_size=0.25, random_state=42, stratify=cultivar)
+
+knn = make_pipeline(StandardScaler(), KNeighborsClassifier(5))
+knn_pca = make_pipeline(StandardScaler(), PCA(n_components=2), KNeighborsClassifier(5))
+
+knn.fit(X_train, y_train)
+knn_pca.fit(X_train, y_train)
+
+y_pred_test = knn.predict(X_test)
+knn_accuracy = accuracy_score(y_test, y_pred_test)
+
+y_pred_test = knn_pca.predict(X_test)
+knn_pca_accuracy = accuracy_score(y_test, y_pred_test)
+
+n_test = len(y_test)
+knn_correct = int(round(knn_accuracy * n_test))
+knn_pca_correct = int(round(knn_pca_accuracy * n_test))
+
+print("\nSupervised KNN Test Accuracy")
+print(f"StandardScaler + KNN(5) test accuracy:          {knn_accuracy:.4f} ({knn_correct} / {n_test})")
+print(f"StandardScaler + PCA(2) + KNN(5) test accuracy: {knn_pca_accuracy:.4f} ({knn_pca_correct} / {n_test})")
