@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.signal import filtfilt, butter
+from scipy.signal import filtfilt, butter, find_peaks, spectrogram
 import os
 
 def bandpass(x, fs, a, b):
@@ -18,6 +18,7 @@ def bandpass(x, fs, a, b):
 
 os.makedirs("results", exist_ok=True)
 
+# 1
 d = pd.read_csv("data/seismogram_A.csv")
 t = d["time_s"].to_numpy()
 Z = d["Z"].to_numpy()
@@ -53,6 +54,7 @@ plt.tight_layout()
 fig.savefig("results/time_dependencies.png")
 plt.show()
 
+# 2
 X = np.fft.fft(Z)
 f = np.fft.fftfreq(len(Z), d=1/fs)
 amp = np.abs(X)/len(Z)*2
@@ -86,4 +88,102 @@ ax1.grid(True, which="both", linestyle="--", alpha=0.4)
 
 plt.tight_layout()
 fig.savefig("results/loglog_spectrum.png", dpi=150)
+plt.show()
+
+# 3
+
+a = 0.5
+b = 10
+
+Z_clean = bandpass(Z, fs, a, b)
+N_clean = bandpass(N, fs, a, b)
+E_clean = bandpass(E, fs, a, b)
+
+print(np.allclose(np.fft.ifft(np.fft.fft(Z)).real, Z))
+
+fig, ax1 = plt.subplots(1, 1, figsize=(10, 4))
+ax1.plot(t, (Z - Z_clean) * 1000, color="blue", linewidth=0.7)
+ax1.set_title("Removed Component (Z - Z_clean): Outside 0.5–10 Hz")
+ax1.set_xlabel("Time (s)")
+ax1.set_ylabel("Velocity (mm/s)")
+ax1.grid(True, linestyle="--", alpha=0.5)
+plt.tight_layout()
+fig.savefig("results/removed_Z.png")
+plt.show()
+
+# 4
+
+H_clean = np.sqrt(N_clean**2 + E_clean**2)
+w_05 = int(0.5 * fs)
+env_Z = np.convolve(np.abs(Z_clean), np.ones(w_05) / w_05, mode="same")
+env_H = np.convolve(H_clean, np.ones(w_05) / w_05, mode="same")
+
+windows = [
+    (0.05, "0.05 s (too short)"),
+    (0.5,  "0.5 s (just right)"),
+    (5.0,  "5.0 s (too long)"),
+]
+
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.plot(t, np.abs(Z_clean) * 1000, color="black", linewidth=0.5, label="|Z_clean|")
+
+for sec, label in windows:
+    w = int(sec * fs)
+    env = np.convolve(np.abs(Z_clean), np.ones(w) / w, mode="same")
+    ax.plot(t, env * 1000, linewidth=1.2, label=label)
+
+ax.set_xlabel("Time (s)")
+ax.set_ylabel("Amplitude (mm/s)")
+ax.set_title("Effect of Smoothing Window Length on Z Envelope")
+ax.legend()
+ax.grid(True, linestyle="--", alpha=0.5)
+
+plt.tight_layout()
+fig.savefig("results/envelopes.png", dpi=150)
+plt.show()
+
+# 5
+tp = t[np.argmax(env_Z > 0.05 * np.max(env_Z))]
+
+mask_s = t >= tp + 2
+ts = t[mask_s][np.argmax(env_H[mask_s] > 0.1 * np.max(env_H))]
+print(tp, ts)
+
+channels = [Z_clean, N_clean, E_clean]
+names = ["Z", "N", "E"]
+
+fig, axes = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
+for i, channel in enumerate(channels):
+    axes[i].plot(t, channel * 1000, label=names[i])
+    axes[i].axvline(tp, color="blue", linestyle="--", label="tp")
+    axes[i].axvline(ts, color="red", linestyle="--", label="ts")
+    axes[i].legend(loc="upper right")
+
+plt.tight_layout()
+fig.savefig("results/arrivals.png")
+plt.show()
+
+peaks, _ = find_peaks(env_H, prominence=0.2 * np.max(env_H), distance=int(2 * fs))
+ts_max = t[peaks[np.argmax(env_H[peaks])]]
+print(ts_max)
+
+# 6
+R = (ts - tp) / ((1 / vs) - (1 / vp))
+dR = 1.0 / ((1 / vs) - (1 / vp))
+t_origin = tp - R / vp
+print(f"R = {R:.2f} ± {dR:.2f} km\nt origin: {t_origin}")
+
+# 7
+f, tt, S = spectrogram(Z, fs, nperseg=256)
+mask_f = f <= 10
+
+fig, ax = plt.subplots(figsize=(10, 5))
+pcm = ax.pcolormesh(tt, f[mask_f], 10 * np.log10(S[mask_f, :]), shading="auto")
+ax.set_xlabel("Time (s)")
+ax.set_ylabel("Frequency (Hz)")
+ax.set_title("Spectrogram of Raw Z Channel (0–10 Hz)")
+fig.colorbar(pcm, ax=ax, label="Power (dB)")
+# plt.ylim(0, 10)
+plt.tight_layout()
+fig.savefig("results/spectrogram.png", dpi=150)
 plt.show()
