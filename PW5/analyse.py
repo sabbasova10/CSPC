@@ -27,15 +27,21 @@ E = d["E"].to_numpy()
 
 fs = 1/(t[1]-t[0])
 
-fig, (ax1, ax2, ax3) = plt.subplots(1, 3, sharex=True, figsize=(8,10))
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, figsize=(10, 8))
 
-ax1.plot(t, Z, label="Vertical & time")
-ax2.plot(t, N, label="North-south & time")
-ax3.plot(t, E, label="East-west & time")
+ax1.plot(t, Z * 1000, color="tab:blue", linewidth=0.7, label="Z (Vertical)")
+ax2.plot(t, N * 1000, color="tab:green", linewidth=0.7, label="N (North-South)")
+ax3.plot(t, E * 1000, color="tab:orange", linewidth=0.7, label="E (East-West)")
 
-fig.legend()
+for ax in (ax1, ax2, ax3):
+    ax.set_ylabel("Velocity (mm/s)")
+    ax.legend(loc="upper right")
+    ax.grid(True, linestyle="--", alpha=0.5)
+
+ax3.set_xlabel("Time (s)")
+fig.suptitle("Raw Seismogram A (Three Channels)")
 plt.tight_layout()
-fig.savefig("results/channels_on_time.png")
+fig.savefig("results/channels_on_time.png", dpi=150)
 plt.show()
 
 fs = 1/(t[1]-t[0])
@@ -45,13 +51,20 @@ vs=3.6
 
 mask_60 = t <= 60
 
-fig, axes = plt.subplots(3,1, sharex=True)
-axes[0].plot(t[mask_60], Z[mask_60]*1000 , label="Vertical channel")
-axes[1].plot(t[mask_60], N[mask_60]*1000, label="North-South channel")
-axes[2].plot(t[mask_60], E[mask_60]*1000, label="East-West channel")
+fig, axes = plt.subplots(3, 1, sharex=True, figsize=(10, 7))
+axes[0].plot(t[mask_60], Z[mask_60] * 1000, color="tab:blue", linewidth=0.7, label="Vertical channel (Z)")
+axes[1].plot(t[mask_60], N[mask_60] * 1000, color="tab:green", linewidth=0.7, label="North-South channel (N)")
+axes[2].plot(t[mask_60], E[mask_60] * 1000, color="tab:orange", linewidth=0.7, label="East-West channel (E)")
 
+for ax in axes:
+    ax.set_ylabel("Velocity (mm/s)")
+    ax.legend(loc="upper right")
+    ax.grid(True, linestyle="--", alpha=0.5)
+
+axes[-1].set_xlabel("Time (s)")
+fig.suptitle("Zoom on First 60 s (Background Noise)")
 plt.tight_layout()
-fig.savefig("results/time_dependencies.png")
+fig.savefig("results/time_dependencies.png", dpi=150)
 plt.show()
 
 # 2
@@ -61,9 +74,21 @@ amp = np.abs(X)/len(Z)*2
 
 indexes = np.arange(0,len(Z))
 
-fig, axes = plt.subplots(1, 2)
-axes[0].plot(indexes, amp)
-axes[1].plot(f, amp)
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+axes[0].plot(indexes, amp, linewidth=0.7)
+axes[0].set_title("FFT Amplitude vs. Array Index")
+axes[0].set_xlabel("Array Index (k)")
+axes[0].set_ylabel("Amplitude (m/s)")
+axes[0].grid(True, linestyle="--", alpha=0.5)
+
+axes[1].plot(f, amp, linewidth=0.7)
+axes[1].set_title("FFT Amplitude vs. Frequency (fftfreq)")
+axes[1].set_xlabel("Frequency (Hz)")
+axes[1].set_ylabel("Amplitude (m/s)")
+axes[1].grid(True, linestyle="--", alpha=0.5)
+
+plt.tight_layout()
+fig.savefig("results/index_vs_freq.png", dpi=150)
 plt.show()
 
 Z_quiet = Z[mask_60]
@@ -77,12 +102,13 @@ pos_full = f > 0
 
 fig, ax1 = plt.subplots(1, 1, figsize=(9, 5))
 
+fig, ax1 = plt.subplots(1, 1, figsize=(9, 5))
 ax1.loglog(f[pos_full], amp[pos_full], label="Whole spectrum", alpha=0.85, linewidth=0.8)
 ax1.loglog(f_quiet[pos_quiet], amp_quiet[pos_quiet], label="Quiet Part", alpha=0.85, linewidth=0.8)
 
 ax1.set_xlabel("Frequency (Hz)")
 ax1.set_ylabel("Amplitude (m/s)")
-ax1.set_title("Z spectrum")
+ax1.set_title("Z Spectrum (Log-Log)")
 ax1.legend()
 ax1.grid(True, which="both", linestyle="--", alpha=0.4)
 
@@ -154,10 +180,18 @@ names = ["Z", "N", "E"]
 
 fig, axes = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
 for i, channel in enumerate(channels):
-    axes[i].plot(t, channel * 1000, label=names[i])
-    axes[i].axvline(tp, color="blue", linestyle="--", label="tp")
-    axes[i].axvline(ts, color="red", linestyle="--", label="ts")
+    axes[i].plot(t, channel * 1000, linewidth=0.7, label=names[i])
+    axes[i].axvline(tp, color="blue", linestyle="--", label=f"tp = {tp:.2f} s")
+    axes[i].axvline(ts, color="red", linestyle="--", label=f"ts = {ts:.2f} s")
+    axes[i].set_ylabel("Velocity (mm/s)")
     axes[i].legend(loc="upper right")
+    axes[i].grid(True, linestyle="--", alpha=0.5)
+
+axes[-1].set_xlabel("Time (s)")
+fig.suptitle("Filtered Channels with P and S Arrivals")
+plt.tight_layout()
+fig.savefig("results/arrivals.png", dpi=150)
+plt.show()
 
 plt.tight_layout()
 fig.savefig("results/arrivals.png")
