@@ -1,0 +1,18 @@
+**SEISMOGRAM ANALYSIS REPORT**  
+Record: **data/seismogram_A.csv**  
+P-wave arrival (t_P): 108.42 s  
+S-wave arrival (t_S): 144.08 s  
+Distance (R): 306.13 km  
+Peak Ground Velocity: 1.5105 cm/s  
+Magnitude (M): 6.66  
+
+Record: **data/seismogram_B.csv**  
+P-wave arrival (t_P): 84.25 s  
+S-wave arrival (t_S): 102.43 s  
+Distance (R): 156.07 km  
+Peak Ground Velocity: 0.5711 cm/s  
+Magnitude (M): 5.36  
+
+**SUMMARY**  
+Closest event: **data/seismogram_B.csv** (156.07 km)  
+Strongest event: **data/seismogram_A.csv** (M 6.66)  

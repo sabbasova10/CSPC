@@ -2,7 +2,7 @@ rule all:
     input: "results/events.csv", "results/report.txt"
 
 rule analyse:
-    input: "data/seismogram_A.csv", "data/seismogram_B.csv", "analyse.py
+    input: "data/seismogram_A.csv", "data/seismogram_B.csv", "analyse.py"
     output: "results/events.csv"
     shell: "python analyse.py"
 
